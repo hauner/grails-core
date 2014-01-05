@@ -52,7 +52,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     FunctionalTestPhaseConfigurer(GrailsProjectRunner projectRunner) {
         this.projectRunner = projectRunner
         buildSettings = projectRunner.buildSettings
-        isForkedRun = buildSettings.forkSettings.run
+        isForkedRun = buildSettings?.forkSettings?.test
     }
 
     @Override
