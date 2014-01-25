@@ -122,13 +122,13 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
                 final controller = request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
                 def modelAndView = controller?.modelAndView
                 if (modelAndView == null && (result instanceof Map)) {
-                    modelAndView = new ModelAndView('/', result)
-                    controller?.modelAndView = new ModelAndView(controller.actionUri ?: "/${webRequest.controllerName}/${webRequest.actionName}", result)
+                    modelAndView = new ModelAndView(controller.actionUri ?: "/${webRequest.controllerName}/${webRequest.actionName}", result)
+                    controller?.modelAndView = modelAndView
                 }
                 interceptor.postHandle(request, response, this, modelAndView)
                 interceptor.afterCompletion(request, response, this, null)
 
-                return result
+                return modelAndView?.model
             }
         } catch (e) {
             interceptor.afterCompletion(request, response, this, e)

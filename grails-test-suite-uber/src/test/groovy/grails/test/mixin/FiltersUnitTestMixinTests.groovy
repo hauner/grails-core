@@ -115,10 +115,66 @@ class FiltersUnitTestMixinTests {
         this.autowiredServiceMock.demand.setupSession(1) {}
         return this.autowiredServiceMock.createMock()
     }
+
+    @Test
+    void testFilterAfterCanModifyModelOfNonRenderingAction() {
+        mockFilters(ModifyingFilters)
+
+        def result = withFilters(controller:"author", action:"list") {
+            controller.list()
+        }
+
+        assert result == [authors:['bob', 'fred', 'carl']]
+    }
+
+    @Test
+    void testFilterAfterCanModifyModelOfRenderingAction() {
+        mockFilters(ModifyingFilters)
+
+        withFilters(controller:"author", action:"list") {
+            controller.listRenderView()
+        }
+
+        assert model == [authors:['bob', 'fred', 'carl']]
+    }
+
+    @Test
+    void testFilterAfterReceivesAndReturnsNullWithoutModel() {
+        mockFilters(SimpleFilters)
+
+        def result = withFilters(controller:"author", action:"list") {
+            controller.listRenderObject()
+        }
+
+        assert request.filterAfter == "two null"
+        assert !result
+    }
 }
 
+class ModifyingFilters {
+    def filters = {
+        all(controller:"author", action:"*") {
+            after = { model ->
+                println "model ($model) "
+                model.authors << "carl"
+            }
+        }
+    }
+}
+
+
 class AuthorController {
-    def list = { [authors:['bob', 'fred']]}
+    def list = {
+        [authors:['bob', 'fred']]
+    }
+
+    def listRenderObject () {
+        render "bob, fred"
+    }
+
+    def listRenderView () {
+        render view: 'none', model: [authors:['bob', 'fred']]
+    }
 }
 
 class SimpleFilters {
@@ -136,6 +192,7 @@ class SimpleFilters {
         }
     }
 }
+
 class CancellingFilters {
     def filters = {
         all(controller:"author", action:"list") {
@@ -153,6 +210,7 @@ class CancellingFilters {
         }
     }
 }
+
 class ExceptionThrowingFilters {
     def filters = {
         all(controller:"author", action:"list") {
